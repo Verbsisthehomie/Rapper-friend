@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* Official thelcars.com (LCARS-26) Antonio Canon Typography */
+@font-face {
+  font-family: 'Antonio';
+  src: url('/assets/lcars/Antonio-Bold.woff2') format('woff2'),
+       url('/assets/lcars/Antonio-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Antonio';
+  src: url('/assets/lcars/Antonio-Regular.woff2') format('woff2'),
+       url('/assets/lcars/Antonio-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    --lcars-primary: #eb943a;
+    --lcars-secondary: #fcc19f;
+    --lcars-accent: #baa4e5;
+    --lcars-periwinkle: #8899ff;
+    --lcars-ice: #d29b7f;
+    --lcars-alert: #cf4f4f;
+    --lcars-dark: #000000;
+    --lcars-panel: #0f1118;
+  }
+
+  body {
+    background-color: #000000;
+    color: #f3f4f6;
+    font-family: 'Antonio', 'Barlow Condensed', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* LCARS Font Utility */
+.font-lcars {
+  font-family: 'Antonio', 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.font-mono-tech {
+  font-family: 'JetBrains Mono', 'Charis SIL', 'Noto Sans', monospace;
+}
+
+.font-ipa {
+  font-family: 'Charis SIL', 'Noto Sans', 'Segoe UI', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* Custom Scrollbar in LCARS Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #eb943a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #fcc19f;
+}
+
+/* LCARS Curve Helpers matching thelcars.com standards */
+.lcars-elbow-top-left {
+  border-top-left-radius: 40px;
+}
+
+.lcars-elbow-bottom-left {
+  border-bottom-left-radius: 40px;
+}
+
+.lcars-elbow-top-right {
+  border-top-right-radius: 40px;
+}
+
+.lcars-elbow-bottom-right {
+  border-bottom-right-radius: 40px;
+}

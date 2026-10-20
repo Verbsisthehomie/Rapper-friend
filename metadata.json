@@ -1,0 +1,6 @@
+{
+  "name": "Rapper Friend",
+  "description": "Star Trek LCARS-styled digital garden for lyrical masters, art rappers, and poets. Searchable rhyming database, etymological trees, 2D and 3D astrometric connection graphs, and real-time hyper-detailed bar syllable, rhyme density, and phonemic analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
