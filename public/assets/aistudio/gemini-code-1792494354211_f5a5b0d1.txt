@@ -1,0 +1,7 @@
+Generate a complete, detailed technical specification and code summary of this entire application so I can share it with an external developer for architectural review. Include:
+
+1. Project Overview: The exact app name, core concept, and UI aesthetic/theme.
+2. File Tree & Architecture: List every file in the project and its responsibility, plus all dependencies in package.json.
+3. Core Functionalities & Features: A detailed breakdown of every interactive feature, AI prompt/system instruction, audio/voice capability, state management flow, and API integration.
+4. Component & State Breakdown: The exact props, state variables, and logic inside the main entry files (such as App.tsx, index.tsx, and any custom components or services).
+5. Key Code Snippets: Output the full code of the main application file(s) and any AI service/prompt configuration files.
