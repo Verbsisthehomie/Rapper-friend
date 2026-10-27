@@ -22,6 +22,7 @@ import { QuickRefDevicesGallery } from './components/devices/QuickRefDevicesGall
 import { KeyboardShortcutsModal } from './components/shortcuts/KeyboardShortcutsModal';
 import { playLcarsChirp } from './utils/lcarsAudio';
 import { LEXICON_DATABASE } from './data/lexiconData';
+import { enrichUniversalWordEntry, getSavedCustomCanon } from './utils/universalDictionaryEngine';
 
 const INITIAL_SAVED_PHRASES: SavedPhrase[] = [
   {
@@ -238,12 +239,35 @@ export default function App() {
     setSelectedWord(null);
   };
 
-  const handleSelectWordById = (wordId: string) => {
-    const match = LEXICON_DATABASE.find((w) => w.id === wordId || w.word.toLowerCase() === wordId.toLowerCase());
+  const handleSelectWordById = async (wordId: string) => {
+    const clean = wordId.trim().toLowerCase();
+    const match =
+      LEXICON_DATABASE.find((w) => w.id.toLowerCase() === clean || w.word.toLowerCase() === clean) ||
+      getSavedCustomCanon().find((w) => w.id.toLowerCase() === clean || w.word.toLowerCase() === clean);
     if (match) {
       setSelectedWord(match);
+      return;
     }
+    // Synthesize & enrich any English word from the Universal Dictionary on the fly
+    const universalNode = await enrichUniversalWordEntry(clean);
+    setSelectedWord(universalNode);
   };
+
+  useEffect(() => {
+    if (
+      selectedWord &&
+      selectedWord.tags.includes('universal-dictionary') &&
+      !selectedWord.tags.includes('deep-enriched')
+    ) {
+      let active = true;
+      enrichUniversalWordEntry(selectedWord).then((enriched) => {
+        if (active) setSelectedWord(enriched);
+      });
+      return () => {
+        active = false;
+      };
+    }
+  }, [selectedWord]);
 
   return (
     <LcarsFrame

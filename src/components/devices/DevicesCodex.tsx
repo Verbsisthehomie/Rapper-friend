@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { LcarsEra, LiteraryDeviceGuide } from '../../types/lcars';
 import { LCARS_THEMES } from '../lcars/LcarsTheme';
 import { LITERARY_DEVICES_DATABASE } from '../../data/devicesData';
+import { GRIME_AND_GLOBAL_FLOW_BLUEPRINTS } from '../../data/lexiconData';
 import { playLcarsChirp } from '../../utils/lcarsAudio';
 import {
   Layers,
@@ -269,6 +270,76 @@ export const DevicesCodex: React.FC<DevicesCodexProps> = ({
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* UK Grime, Road Rap, US Regional AAVE & West African Flow Architectures */}
+      <div className="pt-4 border-t-2 border-slate-800 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span className="text-xs font-mono-tech text-emerald-400 uppercase font-bold tracking-wider">
+              // GLOBAL RHYME & CADENCE ARCHITECTURES (140 BPM GRIME • ROAD RAP • AAVE • AFRO-DIASPORA)
+            </span>
+            <h3 className="text-xl font-bold uppercase text-white">
+              UK Grime, Road Rap, US AAVE & West African Bar Formulation Codex
+            </h3>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {GRIME_AND_GLOBAL_FLOW_BLUEPRINTS.map((bp) => (
+            <div
+              key={bp.id}
+              className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col justify-between space-y-3"
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{bp.regionFlag}</span>
+                  <div>
+                    <h4 className="text-base font-bold uppercase text-amber-400">
+                      {bp.title}
+                    </h4>
+                    <div className="text-[11px] font-mono-tech text-cyan-300">
+                      {bp.bpmRange} • {bp.originEra}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 font-sans leading-relaxed">
+                  {bp.coreArchitecture}
+                </p>
+
+                <div className="p-2.5 rounded-lg bg-black/60 border border-slate-800 space-y-1">
+                  <div className="text-[10px] font-mono-tech text-emerald-400 uppercase font-bold">
+                    Phonetic & Bar Formulation Mechanics:
+                  </div>
+                  <ul className="text-xs text-slate-300 font-sans list-disc list-inside space-y-0.5">
+                    {bp.phoneticRules.map((rule, rIdx) => (
+                      <li key={rIdx}>{rule}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <pre className="p-2.5 rounded bg-black/80 border border-slate-800 text-cyan-200 font-mono-tech text-xs whitespace-pre-wrap">
+                  {bp.exemplarBars}
+                </pre>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  onClick={() => {
+                    playLcarsChirp('warp');
+                    onSendToAnalyzer(bp.exemplarBars);
+                  }}
+                  className="px-3 py-1.5 rounded text-black font-extrabold text-xs font-mono-tech uppercase flex items-center gap-1.5 cursor-pointer shadow-md"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  <Send className="w-3 h-3" />
+                  LOAD 4-BAR EXEMPLAR INTO ANALYZER
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

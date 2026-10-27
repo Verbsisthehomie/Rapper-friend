@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { WordEntry, LcarsEra } from '../../types/lcars';
 import { LCARS_THEMES } from '../lcars/LcarsTheme';
 import { playLcarsChirp } from '../../utils/lcarsAudio';
-import { X, Copy, Bookmark, Send, Sparkles, BookOpen, Share2, Compass } from 'lucide-react';
+import { saveWordToCustomCanon, isWordInCanon } from '../../utils/universalDictionaryEngine';
+import { X, Copy, Bookmark, Send, Sparkles, Compass, Globe, Check, PlusCircle } from 'lucide-react';
 
 interface WordDetailModalProps {
   word: WordEntry | null;
@@ -11,6 +12,7 @@ interface WordDetailModalProps {
   onSendToAnalyzer?: (text: string) => void;
   onSaveToVault?: (word: WordEntry) => void;
   onSelectWord?: (wordId: string) => void;
+  onCanonUpdated?: () => void;
 }
 
 export const WordDetailModal: React.FC<WordDetailModalProps> = ({
@@ -20,9 +22,19 @@ export const WordDetailModal: React.FC<WordDetailModalProps> = ({
   onSendToAnalyzer,
   onSaveToVault,
   onSelectWord,
+  onCanonUpdated,
 }) => {
+  const [inCanon, setInCanon] = useState(false);
+
+  useEffect(() => {
+    if (word) {
+      setInCanon(isWordInCanon(word.id));
+    }
+  }, [word]);
+
   if (!word) return null;
   const theme = LCARS_THEMES[currentEra];
+  const isUniversalNode = word.tags.includes('universal-dictionary') && !word.tags.includes('saved-canon');
 
   const handleCopy = () => {
     playLcarsChirp('ack');
@@ -43,6 +55,15 @@ export const WordDetailModal: React.FC<WordDetailModalProps> = ({
     }
   };
 
+  const handlePinToCanon = () => {
+    playLcarsChirp('warp');
+    saveWordToCustomCanon(word);
+    setInCanon(true);
+    if (onCanonUpdated) {
+      onCanonUpdated();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xs">
       <div
@@ -57,7 +78,7 @@ export const WordDetailModal: React.FC<WordDetailModalProps> = ({
           className="px-5 py-3 flex items-center justify-between text-black font-extrabold uppercase tracking-widest"
           style={{ backgroundColor: theme.primary }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className="text-2xl sm:text-3xl tracking-tight">{word.word.toUpperCase()}</span>
             <span className="bg-black text-cyan-300 px-2.5 py-0.5 rounded-full text-xs font-sans tracking-normal border border-cyan-800/40">
               {word.ipa}
@@ -65,6 +86,12 @@ export const WordDetailModal: React.FC<WordDetailModalProps> = ({
             <span className="text-xs bg-black/20 px-2 py-0.5 rounded uppercase">
               {word.pos} • {word.syllables} {word.syllables === 1 ? 'SYLLABLE' : 'SYLLABLES'}
             </span>
+            {isUniversalNode && (
+              <span className="text-[10px] bg-black text-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-mono-tech">
+                <Globe className="w-3 h-3" />
+                UNIVERSAL DICTIONARY NODE
+              </span>
+            )}
           </div>
 
           <button
@@ -255,14 +282,31 @@ export const WordDetailModal: React.FC<WordDetailModalProps> = ({
             </button>
           </div>
 
-          <button
-            onClick={handleSave}
-            className="px-4 py-1.5 rounded-full font-bold text-black uppercase tracking-wider text-xs flex items-center gap-1.5 shadow-md hover:scale-105 transition-all"
-            style={{ backgroundColor: theme.primary }}
-          >
-            <Bookmark className="w-3.5 h-3.5" />
-            SAVE ROOT TO VAULT
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {!inCanon ? (
+              <button
+                onClick={handlePinToCanon}
+                className="px-3.5 py-1.5 rounded-full font-bold text-white bg-emerald-600 hover:bg-emerald-500 uppercase tracking-wider text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                PIN TO MY CANON
+              </button>
+            ) : (
+              <span className="px-3 py-1.5 rounded-full font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                <Check className="w-3.5 h-3.5" />
+                IN CANON
+              </span>
+            )}
+
+            <button
+              onClick={handleSave}
+              className="px-4 py-1.5 rounded-full font-bold text-black uppercase tracking-wider text-xs flex items-center gap-1.5 shadow-md hover:scale-105 transition-all cursor-pointer"
+              style={{ backgroundColor: theme.primary }}
+            >
+              <Bookmark className="w-3.5 h-3.5" />
+              SAVE ROOT TO VAULT
+            </button>
+          </div>
         </div>
       </div>
     </div>
