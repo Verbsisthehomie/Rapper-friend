@@ -168,6 +168,7 @@ export type ActiveTab =
   | 'pieroot'
   | 'holodeck'
   | 'devices'
+  | 'rhyme-evolutions'
   | 'graph2d'
   | 'graph3d'
   | 'vault';

@@ -4,6 +4,7 @@ import { analyzeBars, analyzeRhymeSchemes, applySchemeReplacement } from '../../
 import { LCARS_THEMES } from '../lcars/LcarsTheme';
 import { playLcarsChirp } from '../../utils/lcarsAudio';
 import { LEXICON_DATABASE } from '../../data/lexiconData';
+import { InstrumentalBeatDeck } from '../beats/InstrumentalBeatDeck';
 import {
   Sparkles,
   Bookmark,
@@ -700,70 +701,9 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
           </div>
         </div>
 
-        {/* Right Col: Literary Devices & 16-Step Metronome Sequencer */}
+        {/* Right Col: Multi-Style Instrumental Beat Deck & Literary Devices */}
         <div className="flex flex-col gap-4">
-          
-          {/* 16-Step Flow Pocket Sequencer (Metronome & BPM Control) */}
-          <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono-tech uppercase font-bold text-cyan-300 flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5" />
-                4/4 CADENCE METRONOME
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono-tech font-bold text-amber-400">
-                  {bpm} BPM
-                </span>
-                <button
-                  onClick={() => setIsPlayingMetronome(!isPlayingMetronome)}
-                  className={`p-1.5 rounded-full transition-all ${
-                    isPlayingMetronome
-                      ? 'bg-red-500 text-white'
-                      : 'bg-emerald-500 text-black'
-                  }`}
-                  aria-label={isPlayingMetronome ? 'Stop Metronome' : 'Start Metronome'}
-                >
-                  {isPlayingMetronome ? (
-                    <Square className="w-3.5 h-3.5 fill-current" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* BPM Slider */}
-            <input
-              type="range"
-              min={70}
-              max={140}
-              value={bpm}
-              onChange={(e) => setBpm(parseInt(e.target.value))}
-              className="w-full accent-amber-500 cursor-pointer"
-            />
-
-            {/* 16-Step visual beat indicator */}
-            <div className="grid grid-cols-8 sm:grid-cols-16 gap-1">
-              {Array.from({ length: 16 }).map((_, step) => {
-                const isActive = isPlayingMetronome && currentStep === step;
-                const isDownbeat = step % 4 === 0;
-                return (
-                  <div
-                    key={step}
-                    className={`h-5 rounded-xs transition-colors flex items-center justify-center text-[9px] font-mono-tech font-bold ${
-                      isActive
-                        ? 'bg-amber-400 text-black scale-110 shadow-lg'
-                        : isDownbeat
-                        ? 'bg-slate-700 text-slate-300'
-                        : 'bg-slate-800/80 text-slate-500'
-                    }`}
-                  >
-                    {step + 1}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <InstrumentalBeatDeck currentEra={currentEra} compact />
 
           {/* Real-time Detected Literary Devices */}
           <div className="p-4 rounded-2xl bg-black/60 border border-slate-800 flex-1 flex flex-col overflow-hidden">

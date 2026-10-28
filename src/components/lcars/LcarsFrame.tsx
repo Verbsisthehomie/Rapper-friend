@@ -21,6 +21,7 @@ import {
   Menu,
   X,
   Smartphone,
+  Radio,
 } from 'lucide-react';
 import { VerbsAvatar } from './VerbsAvatar';
 
@@ -91,6 +92,7 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
     { id: 'pieroot', label: 'PIE ROOT ANCESTRY', code: '04-360', icon: <GitFork className="w-3.5 h-3.5 inline mr-1" /> },
     { id: 'holodeck', label: 'HOLODECK CYPHER', code: '05-742', icon: <ShieldAlert className="w-3.5 h-3.5 inline mr-1" /> },
     { id: 'devices', label: 'DEVICES CODEX', code: '06-615', icon: <Layers className="w-3.5 h-3.5 inline mr-1" /> },
+    { id: 'rhyme-evolutions', label: 'RHYME EVOLUTIONS', code: '07-140', icon: <Radio className="w-3.5 h-3.5 inline mr-1" /> },
     { id: 'lexicon', label: 'LEXICON MATRIX', code: '07-447', icon: <BookOpen className="w-3.5 h-3.5 inline mr-1" /> },
     { id: 'wordlists', label: 'RHYME FAMILIES', code: '08-882', icon: <ListOrdered className="w-3.5 h-3.5 inline mr-1" /> },
     { id: 'graph2d', label: '2D ASTROMETRICS', code: '09-320', icon: <Orbit className="w-3.5 h-3.5 inline mr-1" /> },

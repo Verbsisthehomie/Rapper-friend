@@ -17,6 +17,7 @@ import { MultiRhymeEngine } from './components/multis/MultiRhymeEngine';
 import { PieRootExplorer } from './components/pieroot/PieRootExplorer';
 import { HolodeckChamber } from './components/holodeck/HolodeckChamber';
 import { DevicesCodex } from './components/devices/DevicesCodex';
+import { RhymeEvolutionsLab } from './components/evolutions/RhymeEvolutionsLab';
 import { SongAnatomyLab } from './components/anatomy/SongAnatomyLab';
 import { QuickRefDevicesGallery } from './components/devices/QuickRefDevicesGallery';
 import { KeyboardShortcutsModal } from './components/shortcuts/KeyboardShortcutsModal';
@@ -328,6 +329,14 @@ export default function App() {
       {/* Tab: Rhetorical & Art-Rap Literary Devices Codex */}
       {currentTab === 'devices' && (
         <DevicesCodex
+          currentEra={currentEra}
+          onSendToAnalyzer={handleSendToAnalyzer}
+        />
+      )}
+
+      {/* Tab: Under the Hood — Divergent Evolutions of Rhyme Systems */}
+      {currentTab === 'rhyme-evolutions' && (
+        <RhymeEvolutionsLab
           currentEra={currentEra}
           onSendToAnalyzer={handleSendToAnalyzer}
         />
