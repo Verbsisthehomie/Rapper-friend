@@ -22,8 +22,12 @@ import {
   X,
   Smartphone,
   Radio,
+  FileText,
+  Compass,
 } from 'lucide-react';
 import { VerbsAvatar } from './VerbsAvatar';
+import { PdfDocsModal } from '../docs/PdfDocsModal';
+import { BackgroundBeatPlayer } from '../audio/BackgroundBeatPlayer';
 
 interface LcarsFrameProps {
   currentTab: ActiveTab;
@@ -32,6 +36,7 @@ interface LcarsFrameProps {
   onSelectEra: (era: LcarsEra) => void;
   onOpenDevicesGallery?: () => void;
   onOpenShortcuts?: () => void;
+  onOpenDemoTour?: () => void;
   children: React.ReactNode;
 }
 
@@ -42,6 +47,7 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
   onSelectEra,
   onOpenDevicesGallery,
   onOpenShortcuts,
+  onOpenDemoTour,
   children,
 }) => {
   const theme: LcarsThemeConfig = LCARS_THEMES[currentEra];
@@ -49,6 +55,7 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
   const [isMuted, setIsMuted] = useState<boolean>(getAudioMutedState());
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [isCreditsOpen, setIsCreditsOpen] = useState<boolean>(false);
+  const [isDocsModalOpen, setIsDocsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Generate authentic stardate based on timestamp
@@ -186,6 +193,35 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
               </button>
             )}
 
+            {/* Documentation & PDF Exports Button */}
+            <button
+              onClick={() => {
+                playLcarsChirp('input');
+                setIsDocsModalOpen(true);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs uppercase font-bold tracking-wider rounded-md bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-600 text-cyan-300 transition-all cursor-pointer shadow-sm"
+              title="Download Pitch Deck & Technical Specs PDFs"
+            >
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
+              <span>DOCS / PDFS</span>
+            </button>
+
+            {/* Guided Demo Walkthrough Tour Button */}
+            {onOpenDemoTour && (
+              <button
+                onClick={() => {
+                  playLcarsChirp('warp');
+                  onOpenDemoTour();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 text-xs uppercase font-extrabold tracking-wider rounded-md bg-amber-400 hover:bg-amber-300 text-black transition-all cursor-pointer shadow-md hover:scale-105"
+                title="Launch Guided Interactive Demo Tour for First-Time Users (Hotkey: T)"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>DEMO TOUR</span>
+                <span className="hidden sm:inline text-[9px] bg-black/20 px-1 rounded font-mono font-bold">T</span>
+              </button>
+            )}
+
             {/* Mobile Menu Toggle Button (Visible on mobile screens) */}
             <button
               onClick={() => {
@@ -198,6 +234,9 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               <span>{mobileMenuOpen ? 'CLOSE' : 'MODULES'}</span>
             </button>
+
+            {/* Background Audio Beat Player: "Intro" Prod. Alph Tha Alien */}
+            <BackgroundBeatPlayer currentEra={currentEra} />
 
             {/* 6 Canon thelcars.com Era Selectors */}
             {([
@@ -323,6 +362,24 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
                 </button>
               );
             })}
+            {onOpenDemoTour && (
+              <button
+                onClick={() => {
+                  playLcarsChirp('warp');
+                  setMobileMenuOpen(false);
+                  onOpenDemoTour();
+                }}
+                className="md:hidden flex items-center justify-between px-4 py-2.5 rounded-l-full bg-amber-400 hover:bg-amber-300 text-black font-extrabold uppercase tracking-wider text-left min-h-[44px] cursor-pointer shadow-md mt-2"
+              >
+                <span className="flex items-center gap-2">
+                  <Compass className="w-4 h-4" />
+                  <span>START DEMO TOUR</span>
+                </span>
+                <span className="text-[10px] font-mono-tech px-1.5 py-0.5 rounded bg-black/20 text-black">
+                  GUIDED
+                </span>
+              </button>
+            )}
           </nav>
 
           {/* Subsystem Telemetry Readout Graphic */}
@@ -402,6 +459,30 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
           <span>SUBPROCESS RAPPER-FRIEND // AUTHOR: VerBS // <span className="text-amber-400 font-bold">&ldquo;stay beamed up&rdquo;</span></span>
         </div>
         <div className="flex items-center gap-3">
+          {onOpenDemoTour && (
+            <button
+              onClick={() => {
+                playLcarsChirp('warp');
+                onOpenDemoTour();
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-950 hover:bg-amber-900 border border-amber-500/60 text-amber-300 font-bold text-xs cursor-pointer transition-all hover:scale-105 shadow-sm"
+              title="Launch First-Time User Guided Demo Tour"
+            >
+              <Compass className="w-3.5 h-3.5 text-amber-400" />
+              <span>DEMO TOUR</span>
+            </button>
+          )}
+          <button
+            onClick={() => {
+              playLcarsChirp('input');
+              setIsDocsModalOpen(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/60 text-cyan-300 font-bold text-xs cursor-pointer transition-all hover:scale-105 shadow-sm"
+            title="Download Pitch Deck & Technical Specs PDFs"
+          >
+            <FileText className="w-3.5 h-3.5 text-cyan-400" />
+            <span>PITCH & SPECS PDFS</span>
+          </button>
           <button
             onClick={() => {
               playLcarsChirp('ack');
@@ -502,6 +583,13 @@ export const LcarsFrame: React.FC<LcarsFrameProps> = ({
           </div>,
           document.body
         )}
+
+      {/* --- LCARS PDF DOCUMENTATION ARCHIVE MODAL --- */}
+      <PdfDocsModal
+        currentEra={currentEra}
+        isOpen={isDocsModalOpen}
+        onClose={() => setIsDocsModalOpen(false)}
+      />
     </div>
   );
 };

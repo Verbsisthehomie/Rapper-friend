@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { WordEntry, LcarsEra, SavedPhrase, BarAnalysisResult, SchemeAnalysis, SchemeSuggestion } from '../../types/lcars';
+import { WordEntry, LcarsEra, SavedPhrase, BarAnalysisResult, SchemeAnalysis, SchemeSuggestion, AttachedBeat } from '../../types/lcars';
 import { analyzeBars, analyzeRhymeSchemes, applySchemeReplacement } from '../../utils/rhymeEngine';
 import { LCARS_THEMES } from '../lcars/LcarsTheme';
 import { playLcarsChirp } from '../../utils/lcarsAudio';
 import { LEXICON_DATABASE } from '../../data/lexiconData';
 import { InstrumentalBeatDeck } from '../beats/InstrumentalBeatDeck';
+import { saveNoteBeat } from '../../utils/noteBeatsStorage';
 import {
   Sparkles,
   Bookmark,
   Play,
+  Pause,
   Square,
   Volume2,
   Sliders,
@@ -24,6 +26,10 @@ import {
   Check,
   Repeat,
   ArrowRightLeft,
+  Upload,
+  Music,
+  FileAudio,
+  Disc,
 } from 'lucide-react';
 
 interface BarAnalyzerProps {
@@ -75,6 +81,18 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
   const [savedSuccess, setSavedSuccess] = useState<boolean>(false);
   const [selectedSchemeTab, setSelectedSchemeTab] = useState<'AABB' | 'ABAB' | 'AAAA'>('AABB');
   const [schemeAppliedNotice, setSchemeAppliedNotice] = useState<string | null>(null);
+
+  // Beat attachment state in Save Modal
+  const [attachedBeatFile, setAttachedBeatFile] = useState<File | null>(null);
+  const [isAlphIntroAttached, setIsAlphIntroAttached] = useState<boolean>(false);
+  const [attachedBeatTitle, setAttachedBeatTitle] = useState<string>('');
+  const [attachedBeatProducer, setAttachedBeatProducer] = useState<string>('');
+  const [attachedBeatBpm, setAttachedBeatBpm] = useState<number>(90);
+  const [attachedDuration, setAttachedDuration] = useState<number>(0);
+  const [attachedPreviewUrl, setAttachedPreviewUrl] = useState<string | null>(null);
+  const [isPlayingModalPreview, setIsPlayingModalPreview] = useState<boolean>(false);
+  const modalAudioRef = useRef<HTMLAudioElement | null>(null);
+  const beatFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Real-time Bar Analysis computation
   const analysis: BarAnalysisResult = useMemo(() => {
@@ -153,8 +171,48 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
     return roots;
   }, [lyrics]);
 
-  const handleSaveBar = () => {
+  const handleSaveBar = async () => {
     playLcarsChirp('warp');
+    let attachedBeatMetadata: AttachedBeat | undefined = undefined;
+
+    if (isAlphIntroAttached) {
+      attachedBeatMetadata = {
+        id: 'beat-alph-intro',
+        name: 'Intro',
+        fileName: '10_Intro_9cb887a1.mp3',
+        producer: 'Alph Tha Alien',
+        bpm: 92,
+        duration: 191,
+        uploadedAt: Date.now(),
+        blobUrl: '/assets/aistudio/10_Intro_9cb887a1.mp3',
+      };
+    } else if (attachedBeatFile) {
+      const beatId = `beat-note-${Date.now()}`;
+      await saveNoteBeat(
+        beatId,
+        {
+          name: attachedBeatTitle || attachedBeatFile.name.replace(/\.[^/.]+$/, ''),
+          fileName: attachedBeatFile.name,
+          fileSize: attachedBeatFile.size,
+          mimeType: attachedBeatFile.type || 'audio/mpeg',
+          duration: attachedDuration || 0,
+          producer: attachedBeatProducer || undefined,
+          bpm: attachedBeatBpm || undefined,
+        },
+        attachedBeatFile
+      );
+      attachedBeatMetadata = {
+        id: beatId,
+        name: attachedBeatTitle || attachedBeatFile.name.replace(/\.[^/.]+$/, ''),
+        fileName: attachedBeatFile.name,
+        fileSize: attachedBeatFile.size,
+        duration: attachedDuration,
+        producer: attachedBeatProducer || undefined,
+        bpm: attachedBeatBpm || undefined,
+        uploadedAt: Date.now(),
+      };
+    }
+
     const newSavedPhrase: SavedPhrase = {
       id: `phrase-${Date.now()}`,
       phrase: lyrics,
@@ -165,10 +223,18 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
       tags: [analysis.cadenceGrade, `Density ${analysis.rhymeDensityScore}%`],
       rhymeScheme: `${analysis.lines.length} Bars`,
       attachedRoots: detectedRootDefinitions,
+      attachedBeat: attachedBeatMetadata,
     };
     onSaveToVault(newSavedPhrase);
     setSaveModalOpen(false);
     setSavedSuccess(true);
+    // Cleanup modal preview
+    if (modalAudioRef.current) modalAudioRef.current.pause();
+    if (attachedPreviewUrl) URL.revokeObjectURL(attachedPreviewUrl);
+    setAttachedBeatFile(null);
+    setIsAlphIntroAttached(false);
+    setAttachedPreviewUrl(null);
+    setIsPlayingModalPreview(false);
     setTimeout(() => setSavedSuccess(false), 2500);
   };
 
@@ -809,7 +875,7 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
             {/* Optional Personal Lyricist Notes */}
             <div>
               <label className="text-xs font-mono-tech text-slate-400 uppercase font-bold block mb-1">
-                OPTIONAL NOTES / INTENDED TRACK / RHYME SCHEME:
+                LYRICIST NOTES / INTENDED TRACK / CADENCE IDEAS:
               </label>
               <input
                 type="text"
@@ -818,6 +884,170 @@ export const BarAnalyzer: React.FC<BarAnalyzerProps> = ({
                 placeholder="e.g. Verse 2 opening bar, internal multi on 'ignite'"
                 className="w-full bg-black border border-slate-700 rounded-lg p-2 text-xs font-mono-tech text-white focus:outline-none focus:border-amber-400"
               />
+            </div>
+
+            {/* Attach User Beat to Notes Section */}
+            <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-mono-tech uppercase font-bold text-amber-400 flex items-center gap-1.5">
+                  <Music className="w-3.5 h-3.5" />
+                  ATTACH BEAT TO THIS NOTE (MP3 / WAV / M4A):
+                </span>
+                {(attachedBeatFile || isAlphIntroAttached) && (
+                  <button
+                    onClick={() => {
+                      if (modalAudioRef.current) modalAudioRef.current.pause();
+                      setAttachedBeatFile(null);
+                      setIsAlphIntroAttached(false);
+                      setAttachedPreviewUrl(null);
+                      setIsPlayingModalPreview(false);
+                    }}
+                    className="text-[10px] text-red-400 hover:text-red-300 font-mono-tech"
+                  >
+                    Remove Beat
+                  </button>
+                )}
+              </div>
+
+              {/* Quick Attach: Intro Prod. Alph Tha Alien */}
+              {!attachedBeatFile && !isAlphIntroAttached && (
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playLcarsChirp('warp');
+                      setIsAlphIntroAttached(true);
+                      setAttachedBeatTitle('Intro');
+                      setAttachedBeatProducer('Alph Tha Alien');
+                      setAttachedBeatBpm(92);
+                      setAttachedDuration(191);
+                      setAttachedPreviewUrl('/assets/aistudio/10_Intro_9cb887a1.mp3');
+                    }}
+                    className="flex-1 p-2 rounded-lg bg-amber-950/40 border border-amber-600/50 hover:bg-amber-950/70 text-left transition-colors flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Disc className="w-4 h-4 text-amber-400" />
+                      <div>
+                        <span className="text-xs font-bold text-white block uppercase">ATTACH "INTRO"</span>
+                        <span className="text-[10px] text-amber-400">PROD. ALPH THA ALIEN • 92 BPM</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-black bg-amber-400 px-2 py-0.5 rounded">ATTACH</span>
+                  </button>
+
+                  <input
+                    type="file"
+                    ref={beatFileInputRef}
+                    accept="audio/*,.mp3,.wav,.ogg,.m4a"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      playLcarsChirp('warp');
+                      setAttachedBeatFile(file);
+                      setIsAlphIntroAttached(false);
+                      setAttachedBeatTitle(file.name.replace(/\.[^/.]+$/, ''));
+                      const url = URL.createObjectURL(file);
+                      setAttachedPreviewUrl(url);
+                      const t = new Audio(url);
+                      t.onloadedmetadata = () => {
+                        if (t.duration && !isNaN(t.duration)) {
+                          setAttachedDuration(t.duration);
+                        }
+                      };
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => beatFileInputRef.current?.click()}
+                    className="flex-1 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-amber-400 text-slate-200 text-left transition-colors flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Upload className="w-4 h-4 text-cyan-400" />
+                      <div>
+                        <span className="text-xs font-bold text-white block uppercase">UPLOAD OWN BEAT</span>
+                        <span className="text-[10px] text-slate-400">MP3, WAV, M4A from device</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-cyan-300 bg-slate-900 px-2 py-0.5 rounded">CHOOSE</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Attached Beat Preview Strip */}
+              {(attachedBeatFile || isAlphIntroAttached) && (
+                <div className="p-2.5 rounded-lg bg-black/80 border border-amber-500/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileAudio className="w-4 h-4 text-amber-400" />
+                      <div>
+                        <span className="font-bold text-white text-xs block">
+                          {isAlphIntroAttached ? 'Intro (Prod. Alph Tha Alien)' : (attachedBeatTitle || attachedBeatFile?.name)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono-tech">
+                          {isAlphIntroAttached ? '3.3 MB • 92 BPM • 03:11' : `${((attachedBeatFile?.size || 0) / (1024*1024)).toFixed(1)} MB • ${Math.round(attachedDuration)}s`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Preview Play/Pause button */}
+                    {attachedPreviewUrl && (
+                      <div className="flex items-center gap-2">
+                        <audio
+                          ref={modalAudioRef}
+                          src={attachedPreviewUrl}
+                          onPlay={() => setIsPlayingModalPreview(true)}
+                          onPause={() => setIsPlayingModalPreview(false)}
+                          onEnded={() => setIsPlayingModalPreview(false)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playLcarsChirp('tap');
+                            if (!modalAudioRef.current) return;
+                            if (isPlayingModalPreview) {
+                              modalAudioRef.current.pause();
+                            } else {
+                              modalAudioRef.current.play().catch((err: unknown) => console.warn(err));
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded bg-amber-400 text-black font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                        >
+                          {isPlayingModalPreview ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                          <span>{isPlayingModalPreview ? 'PAUSE' : 'AUDITION'}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Beat metadata fields if custom file */}
+                  {attachedBeatFile && (
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800">
+                      <div>
+                        <label className="text-[9px] text-slate-400 block font-mono-tech">BEAT TITLE</label>
+                        <input
+                          type="text"
+                          value={attachedBeatTitle}
+                          onChange={(e) => setAttachedBeatTitle(e.target.value)}
+                          placeholder="Beat Title"
+                          className="w-full bg-slate-900 border border-slate-700 rounded p-1 text-xs text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] text-slate-400 block font-mono-tech">PRODUCER</label>
+                        <input
+                          type="text"
+                          value={attachedBeatProducer}
+                          onChange={(e) => setAttachedBeatProducer(e.target.value)}
+                          placeholder="e.g. Alph Tha Alien / Self"
+                          className="w-full bg-slate-900 border border-slate-700 rounded p-1 text-xs text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Confirm Save Button */}

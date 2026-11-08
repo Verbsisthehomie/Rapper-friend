@@ -47,6 +47,18 @@ export interface BarAnalysisResult {
   meterPattern: string[]; // array of meter strings per line, e.g. "´ ˘ ´ ˘ ´"
 }
 
+export interface AttachedBeat {
+  id: string;
+  name: string;
+  fileName: string;
+  fileSize?: number;
+  duration?: number; // duration in seconds
+  bpm?: number;
+  producer?: string;
+  uploadedAt: number;
+  blobUrl?: string; // in-memory or fallback asset URL
+}
+
 export interface SavedPhrase {
   id: string;
   phrase: string;
@@ -56,6 +68,7 @@ export interface SavedPhrase {
   notes?: string;
   tags: string[];
   rhymeScheme?: string;
+  attachedBeat?: AttachedBeat;
   attachedRoots: {
     word: string;
     pieRoot?: string;

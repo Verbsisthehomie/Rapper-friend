@@ -21,6 +21,7 @@ import { RhymeEvolutionsLab } from './components/evolutions/RhymeEvolutionsLab';
 import { SongAnatomyLab } from './components/anatomy/SongAnatomyLab';
 import { QuickRefDevicesGallery } from './components/devices/QuickRefDevicesGallery';
 import { KeyboardShortcutsModal } from './components/shortcuts/KeyboardShortcutsModal';
+import { DemoWalkthroughModal } from './components/demo/DemoWalkthroughModal';
 import { playLcarsChirp } from './utils/lcarsAudio';
 import { LEXICON_DATABASE } from './data/lexiconData';
 import { enrichUniversalWordEntry, getSavedCustomCanon } from './utils/universalDictionaryEngine';
@@ -38,6 +39,16 @@ The cyber soul upon the golden throne`,
     notes: 'VerBS art-rap flow cadence test. Double end-rhymes on night/flight/ignite with deep PIE roots.',
     tags: ['POCKET S+', 'Density 85%'],
     rhymeScheme: 'AABB',
+    attachedBeat: {
+      id: 'beat-alph-intro',
+      name: 'Intro',
+      fileName: '10_Intro_9cb887a1.mp3',
+      producer: 'Alph Tha Alien',
+      bpm: 92,
+      duration: 191,
+      uploadedAt: Date.now() - 3600000,
+      blobUrl: '/assets/aistudio/10_Intro_9cb887a1.mp3',
+    },
     attachedRoots: [
       {
         word: 'night',
@@ -97,6 +108,23 @@ export default function App() {
   const [analyzerText, setAnalyzerText] = useState<string>('');
   const [isDevicesQuickRefOpen, setIsDevicesQuickRefOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [isDemoTourOpen, setIsDemoTourOpen] = useState<boolean>(false);
+
+  // Auto-launch Guided Interactive Demo Tour for first-time visitors
+  useEffect(() => {
+    try {
+      const hasSeenTour = localStorage.getItem('rapper_friend_demo_tour_completed');
+      if (!hasSeenTour) {
+        // Brief stardate buffer so initial interface renders and sounds initialize
+        const timer = setTimeout(() => {
+          setIsDemoTourOpen(true);
+        }, 850);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      console.warn('Could not read demo tour completion flag', e);
+    }
+  }, []);
 
   // Global Keyboard Shortcuts Listener
   useEffect(() => {
@@ -111,6 +139,7 @@ export default function App() {
         setSelectedWord(null);
         setIsDevicesQuickRefOpen(false);
         setIsShortcutsOpen(false);
+        setIsDemoTourOpen(false);
         return;
       }
 
@@ -140,6 +169,18 @@ export default function App() {
         const randomWord = pool[Math.floor(Math.random() * pool.length)];
         setSelectedWord(randomWord);
         playLcarsChirp('warp');
+        return;
+      }
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        setIsDemoTourOpen((prev) => !prev);
+        playLcarsChirp('warp');
+        return;
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('toggle-background-beat'));
+        playLcarsChirp('input');
         return;
       }
 
@@ -214,6 +255,10 @@ export default function App() {
     setSavedPhrases((prev) => [phrase, ...prev]);
   };
 
+  const handleUpdatePhrase = (updated: SavedPhrase) => {
+    setSavedPhrases((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  };
+
   const handleDeletePhrase = (id: string) => {
     setSavedPhrases((prev) => prev.filter((p) => p.id !== id));
   };
@@ -278,6 +323,7 @@ export default function App() {
       onSelectEra={setCurrentEra}
       onOpenDevicesGallery={() => setIsDevicesQuickRefOpen(true)}
       onOpenShortcuts={() => setIsShortcutsOpen(true)}
+      onOpenDemoTour={() => setIsDemoTourOpen(true)}
     >
       {/* Tab: Hyper-detailed Bar Analyzer */}
       {currentTab === 'analyzer' && (
@@ -384,6 +430,8 @@ export default function App() {
           onDeletePhrase={handleDeletePhrase}
           onSendToAnalyzer={handleSendToAnalyzer}
           onSelectWord={setSelectedWord}
+          onUpdatePhrase={handleUpdatePhrase}
+          onSavePhrase={handleSaveToVault}
         />
       )}
 
@@ -412,6 +460,16 @@ export default function App() {
         currentEra={currentEra}
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Interactive Guided Demo Tour Modal & Floating PADD */}
+      <DemoWalkthroughModal
+        currentEra={currentEra}
+        isOpen={isDemoTourOpen}
+        onClose={() => setIsDemoTourOpen(false)}
+        onSelectTab={setCurrentTab}
+        onSelectEra={setCurrentEra}
+        onSendToAnalyzer={handleSendToAnalyzer}
       />
     </LcarsFrame>
   );

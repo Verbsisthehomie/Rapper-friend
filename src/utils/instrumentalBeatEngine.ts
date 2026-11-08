@@ -22,6 +22,8 @@ export interface InstrumentalPreset {
   snarePattern: number[]; // 16 steps: 1 = snare/clap, 0.5 = rim, 0 = rest
   hatPattern: number[]; // 16 steps: 1 = closed, 2 = open, 3 = triplet roll
   clavePattern?: number[]; // 16 steps for Afro/Dancehall/Drill clave/stab
+  audioFileUrl?: string; // High-definition studio master audio file path
+  producer?: string; // Beat producer credit
 }
 
 export interface CustomUploadedBeat {
@@ -35,6 +37,31 @@ export interface CustomUploadedBeat {
 }
 
 export const BUILTIN_INSTRUMENTAL_PRESETS: InstrumentalPreset[] = [
+  {
+    id: 'alph-alien-intro-master',
+    name: 'Intro (Prod. Alph Tha Alien) — Studio Master',
+    regionFlag: '🛸',
+    styleCategory: 'us-west-midwest',
+    defaultBpm: 92,
+    swingFactor: 0.18,
+    subdivisionFeel: 'Cosmic Art-Rap Pocket • Produced by Alph Tha Alien',
+    description:
+      'Official VerBS studio instrumental produced by Alph Tha Alien. Hypnotic cosmic synths, punchy drums, and deep atmospheric low-end engineered for complex cadences.',
+    recommendedDisciplineId: 'us-la-project-blowed',
+    audioFileUrl: '/assets/aistudio/10_Intro_9cb887a1.mp3',
+    producer: 'Alph Tha Alien',
+    bassFreqs: [55, 0, 55, 65.41, 0, 0, 73.42, 0, 82.41, 0, 73.42, 0, 65.41, 0, 61.74, 0],
+    chordNotes: [
+      [220, 261.63, 329.63, 392.0],
+      [220, 261.63, 329.63, 392.0],
+      [196.0, 233.08, 293.66, 349.23],
+      [174.61, 220.0, 261.63, 329.63],
+    ],
+    synthWave: 'sawtooth',
+    kickPattern: [1, 0, 0, 0.7, 0, 0, 0, 0, 1, 0, 0.8, 0, 0, 0, 0, 0.5],
+    snarePattern: [0, 0, 0, 0, 1, 0, 0, 0.3, 0, 0, 0, 0, 1, 0, 0, 0],
+    hatPattern: [1, 0, 1, 0, 1, 0, 1, 0.6, 1, 0, 1, 0, 1, 0, 2, 0],
+  },
   {
     id: 'ny-boombap-90',
     name: 'NY Golden Era Boom-Bap (SP-1200 Jazz Chop)',

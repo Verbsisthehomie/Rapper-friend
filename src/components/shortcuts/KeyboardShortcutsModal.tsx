@@ -35,6 +35,8 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({
     { key: 'M', desc: 'Toggle LCARS Audio Sound Effects (Mute / Unmute)' },
     { key: 'R', desc: 'Draw Random Rare Emotion or Rare Color Word' },
     { key: 'Space', desc: 'Play / Pause Song Audio or Metronome (when outside inputs)' },
+    { key: 'B', desc: 'Toggle Background Beat: "Intro" Prod. Alph Tha Alien' },
+    { key: 'T', desc: 'Launch Guided Interactive Demo Walkthrough' },
     { key: '?', desc: 'Toggle this LCARS Keyboard Shortcuts & Mobile Guide' },
     { key: 'Esc', desc: 'Close any active modal or drawer' },
   ];

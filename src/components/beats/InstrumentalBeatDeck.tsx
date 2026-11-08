@@ -80,6 +80,7 @@ export const InstrumentalBeatDeck: React.FC<InstrumentalBeatDeckProps> = ({
   const [spectrumBars, setSpectrumBars] = useState<number[]>(new Array(16).fill(10));
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const presetAudioRef = useRef<HTMLAudioElement | null>(null);
   const currentBlobUrlRef = useRef<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -153,7 +154,40 @@ export const InstrumentalBeatDeck: React.FC<InstrumentalBeatDeckProps> = ({
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
+    if (presetAudioRef.current) {
+      presetAudioRef.current.volume = volume;
+    }
   }, [volume]);
+
+  // Handle direct audio file playback for master studio presets (e.g. Alph Tha Alien)
+  useEffect(() => {
+    if (!selectedPreset.audioFileUrl) {
+      if (presetAudioRef.current) {
+        presetAudioRef.current.pause();
+      }
+      return;
+    }
+
+    if (!presetAudioRef.current) {
+      presetAudioRef.current = new Audio(selectedPreset.audioFileUrl);
+    } else if (presetAudioRef.current.src !== selectedPreset.audioFileUrl) {
+      presetAudioRef.current.src = selectedPreset.audioFileUrl;
+    }
+
+    const audio = presetAudioRef.current;
+    audio.loop = true;
+    audio.volume = volume;
+
+    if (isPlayingSynth) {
+      audio.play().catch((e) => console.warn('Preset audio playback error:', e));
+    } else {
+      audio.pause();
+    }
+
+    return () => {
+      audio.pause();
+    };
+  }, [isPlayingSynth, selectedPreset.audioFileUrl, volume]);
 
   // Real-time 16-step synthesizer loop with swing support
   useEffect(() => {
@@ -177,7 +211,9 @@ export const InstrumentalBeatDeck: React.FC<InstrumentalBeatDeckProps> = ({
         hatPattern: customHat,
       };
 
-      beatSynth.triggerStep(livePreset, step, bpm);
+      if (!selectedPreset.audioFileUrl) {
+        beatSynth.triggerStep(livePreset, step, bpm);
+      }
       setCurrentStep(step);
       setBarCounter(bar);
       setSpectrumBars(beatSynth.getFrequencyLevels());
